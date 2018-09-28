@@ -1,3 +1,5 @@
+package src;
+
 import java.io.*;
 import java.util.*;
 
@@ -88,6 +90,7 @@ public class Bayespam
     private static void readMessages(MessageType type)
     throws IOException
     {
+        Reducer<String> reducer = new Reducer<>(new WordFilter(), new StopWordFilter());
         File[] messages = new File[0];
 
         if (type == MessageType.NORMAL){
@@ -106,12 +109,20 @@ public class Bayespam
             
             while ((line = in.readLine()) != null)                      // read a line
             {
-                StringTokenizer st = new StringTokenizer(line);         // parse it into words
-                // test 
-                for(Object o : st){
-                    System.out.println(o)
-                }
+                
+                
+                //Split line in list of words (blank space separated)
+                Collection<String> words = StringProcessor.splitTaggedText(line);
+                
+                //Pass all filters on words
+                words = reducer.reduce(words);
+                // join back in astring 
+                line = String.join(" ", words);
+                //Set all to lower case
+                line = line.toLowerCase();
 
+                StringTokenizer st = new StringTokenizer(line);         // parse it into words
+                
                 while (st.hasMoreTokens())                  // while there are stille words left..
                 {
                     addWord(st.nextToken(), type);                  // add them to the vocabulary

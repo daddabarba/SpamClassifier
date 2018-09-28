@@ -1,0 +1,1 @@
+java -cp target/ src.Bayespam $1 $2
