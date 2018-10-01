@@ -11,8 +11,10 @@ public class BayesClass{
 
     public static final double eps = 1.0;
     public static final double alpha = 1.0;
+    public static final double minF = 0.0;
 
     private double prior_H0, prior_H1;
+    private double log_prior_H0, log_prior_H1;
     private int size_H0=0, size_H1=0;
 
     private Hashtable<String, ProbabilityPair> likelihoods = new Hashtable<>();
@@ -20,10 +22,16 @@ public class BayesClass{
     private class ProbabilityPair{
 
         private double P_H0, P_H1;
+        private double evidence;
 
         public ProbabilityPair(double lH0, double lH1){
             P_H0 = lH0;
             P_H1 = lH1;
+            evidence = 0.0;
+        }
+
+        public void setEvidence(double evidence){
+            this.evidence = evidence;
         }
 
         public double getP(int cls){
@@ -31,6 +39,10 @@ public class BayesClass{
                 return P_H0;
 
             return P_H1;
+        }
+
+        public double getEvidence(){
+            return this.evidence;
         }
 
         public void add(ProbabilityPair p){
@@ -61,7 +73,7 @@ public class BayesClass{
 
         String line;
 
-        ProbabilityPair posterior = new ProbabilityPair(prior_H0+alpha,prior_H1+alpha); 
+        ProbabilityPair posterior = new ProbabilityPair(getPrior(0)+alpha,getPrior(1)+alpha); 
 
         while ((line = in.readLine()) != null)
             posterior.add(getLineLikelihood(line, mode));
@@ -83,7 +95,8 @@ public class BayesClass{
 
         for(String token : words)
             if(likelihoods.keySet().contains(token))
-                lineLikelihood.add(likelihoods.get(token));
+                if(mode!=FeatureMode.BIGRAM || likelihoods.get(token).getEvidence()>minF)    
+                    lineLikelihood.add(likelihoods.get(token));
         
         return lineLikelihood;
     }
@@ -98,8 +111,8 @@ public class BayesClass{
         prior_H0 = (double)num_regular/total;
         prior_H1 = (double)num_spam/total;
 
-        prior_H0 = Math.log(prior_H0);
-        prior_H1 = Math.log(prior_H1);
+        log_prior_H0 = Math.log(prior_H0);
+        log_prior_H1 = Math.log(prior_H1);
     }
 
     public void initializeLikelihoods(Hashtable<String, Multiple_Counter> absFrequencies){
@@ -120,13 +133,17 @@ public class BayesClass{
             if(!(likelihood_H1>0.0))
                 likelihood_H1 = eps/(size_H0+size_H1);
 
-
-            likelihood_H0 = Math.log(likelihood_H0);
-            likelihood_H1 = Math.log(likelihood_H1);
-
-            likelihoods.put(word, new ProbabilityPair(likelihood_H0, likelihood_H1));
+            likelihoods.put(word,computeEvidence(likelihood_H0, likelihood_H1));
         }
 
+    }
+
+    public ProbabilityPair computeEvidence(double l_H0, double l_H1){
+
+        ProbabilityPair ret = new ProbabilityPair(Math.log(l_H0), Math.log(l_H1));
+        ret.setEvidence(l_H0*prior_H0 + l_H1*prior_H1);
+
+        return ret;
     }
 
     public void printTable(){
@@ -138,8 +155,8 @@ public class BayesClass{
 
     public double getPrior(int cls){
         if(cls==0)
-            return prior_H0;
+            return log_prior_H0;
 
-        return prior_H1;
+        return log_prior_H1;
     }
 }
