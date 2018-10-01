@@ -8,7 +8,6 @@ public class StringProcessor{
         
         String[] parts = str.split("#");
         ArrayList<String> splitted = new ArrayList<>();
-
         
         for(int i= 0; i<parts.length; i++){
             if(parts[i].equals("<") && i<parts.length-1){
@@ -16,10 +15,11 @@ public class StringProcessor{
                 i+=2;
             }else{
                 String line = parts[i].replaceAll("[^a-zA-Z0-9\\s]", "");
-                splitted.addAll(Arrays.asList(line.split(" ")));
+                splitted.addAll(Arrays.asList(line.split("\\s")));
             }
                 
         }
+        
         return splitted;
     }
 }

@@ -63,8 +63,10 @@ public class Bayespam
             Runtime.getRuntime().exit(0);
         }
 
-        listing_regular = dir_listing[0].listFiles();
-        listing_spam    = dir_listing[1].listFiles();
+        int regular_idx = dir_listing[0].getName().equals("regular") ? 0 : 1;
+
+        listing_regular = dir_listing[regular_idx].listFiles();
+        listing_spam    = dir_listing[1-regular_idx].listFiles();
     }
 
     
@@ -109,23 +111,14 @@ public class Bayespam
             
             while ((line = in.readLine()) != null)                      // read a line
             {
+                if(line.contains("0rgasm")){
+                    System.out.println("asdas");
+                }
+                Collection<String> st = Featurizer.extractFeatures(line);         // parse it into words
                 
-                
-                //Split line in list of words (blank space separated)
-                Collection<String> words = StringProcessor.splitTaggedText(line);
-                
-                //Pass all filters on words
-                words = reducer.reduce(words);
-                // join back in astring 
-                line = String.join(" ", words);
-                //Set all to lower case
-                line = line.toLowerCase();
-
-                StringTokenizer st = new StringTokenizer(line);         // parse it into words
-                
-                while (st.hasMoreTokens())                  // while there are stille words left..
+                for(String token : st)                  // while there are stille words left..
                 {
-                    addWord(st.nextToken(), type);                  // add them to the vocabulary
+                    addWord(token, type);                  // add them to the vocabulary
                 }
             }
 
@@ -149,12 +142,20 @@ public class Bayespam
         // Initialize the regular and spam lists
         listDirs(dir_location);
 
+        //Initialize Bayes stats wrapper
+        BayesClass bayesClass = new BayesClass();
+
+        //Initialize prior probabilities
+        bayesClass.initializePriors(dir_location.listFiles());
+
         // Read the e-mail messages
         readMessages(MessageType.NORMAL);
         readMessages(MessageType.SPAM);
 
         // Print out the hash table
-        printVocab();
+        //printVocab();
+        bayesClass.initializeLikelihoods(vocab);
+        bayesClass.printTable();
         
         // Now all students must continue from here:
         //
