@@ -5,6 +5,10 @@ import java.util.*;
 
 public class BayesClass{
 
+    public enum FeatureMode{
+        UNIGRAM, BIGRAM
+    }
+
     public static final double eps = 1.0;
     public static final double alpha = 1.0;
 
@@ -35,8 +39,12 @@ public class BayesClass{
         }
     }
 
-    public int classify(File message) throws FileNotFoundException, IOException{
-        ProbabilityPair posterior = getPosteriors(message);
+    public int classify(File message) throws FileNotFoundException, IOException {
+        return classify(message, FeatureMode.UNIGRAM);
+    }
+
+    public int classify(File message, FeatureMode mode) throws FileNotFoundException, IOException{
+        ProbabilityPair posterior = getPosteriors(message, mode);
         if(posterior.getP(0)>posterior.getP(1))
             return 0;
         
@@ -44,6 +52,10 @@ public class BayesClass{
     }
 
     public ProbabilityPair getPosteriors(File message) throws FileNotFoundException, IOException{
+        return getPosteriors(message, FeatureMode.UNIGRAM);
+    }
+
+    public ProbabilityPair getPosteriors(File message, FeatureMode mode) throws FileNotFoundException, IOException{
         FileInputStream i_s = new FileInputStream( message );
         BufferedReader in = new BufferedReader(new InputStreamReader(i_s));
 
@@ -52,18 +64,22 @@ public class BayesClass{
         ProbabilityPair posterior = new ProbabilityPair(prior_H0+alpha,prior_H1+alpha); 
 
         while ((line = in.readLine()) != null)
-            posterior.add(getLineLikelihood(line));
+            posterior.add(getLineLikelihood(line, mode));
 
         in.close();
 
         return posterior;
     }
 
-    private ProbabilityPair getLineLikelihood(String line){
+    private ProbabilityPair getLineLikelihood(String line, FeatureMode mode){
 
         ProbabilityPair lineLikelihood = new ProbabilityPair(0.0, 0.0);
+        Collection<String> words;
 
-        Collection<String> words  = Featurizer.extractFeatures(line);
+        if(mode==FeatureMode.UNIGRAM)
+            words  = Featurizer.extractFeatures(line);
+        else
+            words = Featurizer.extractBigrams(line);
 
         for(String token : words)
             if(likelihoods.keySet().contains(token))
@@ -86,7 +102,7 @@ public class BayesClass{
         prior_H1 = Math.log(prior_H1);
     }
 
-    public void initializeLikelihoods(Hashtable<String, Bayespam.Multiple_Counter> absFrequencies){
+    public void initializeLikelihoods(Hashtable<String, Multiple_Counter> absFrequencies){
 
         for(String word : absFrequencies.keySet()){
             size_H0 += absFrequencies.get(word).counter_regular;

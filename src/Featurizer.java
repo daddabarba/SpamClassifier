@@ -21,4 +21,20 @@ public class Featurizer{
         return words;
     }
 
+    private static boolean isTag(String token){
+        return token.charAt(0) == '<' && token.charAt(token.length()) == '>';
+    }
+    public static Collection<String> extractBigrams(String line){
+        ArrayList<String> tokens = extractFeatures(line);
+        Collection<String> bigrams = new ArrayList<>();
+        
+        for(int i = 0; i < tokens.size()-1; i++){
+            if(!isTag(tokens.get(i)) && !isTag(tokens.get(i+1))){
+                bigrams.add(tokens.get(i)+" "+tokens.get(i));
+            }
+        }
+
+        return bigrams;
+    }
+
 }

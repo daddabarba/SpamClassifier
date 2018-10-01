@@ -3,25 +3,10 @@ package src;
 import java.io.*;
 import java.util.*;
 
-public class Bayespam
+public class BigramBayespam
 {
-    // This defines the two types of messages we have.
-    public static enum MessageType
-    {
-        NORMAL(0), SPAM(1);
 
-        private int val;
 
-        private MessageType(int val){
-            this.val = val;
-        }
-
-        public int value(){
-            return this.val;
-        }
-    }
-
-    
     // This a class with two counters (for regular and for spam)
     public static class ConfusionMatrix{
         int totPos;
@@ -59,7 +44,7 @@ public class Bayespam
 
     
     // Add a word to the vocabulary
-    private static void addWord(String word, MessageType type)
+    private static void addWord(String word, Bayespam.MessageType type)
     {
         Multiple_Counter counter = new Multiple_Counter();
 
@@ -105,17 +90,17 @@ public class Bayespam
         File[] test_listing_spam    = test_listing[1-regular_idx].listFiles();
         
         ConfusionMatrix cf = new ConfusionMatrix(test_listing_spam.length, test_listing_regular.length);
-        cf.setFP(getFalses(MessageType.NORMAL,test_listing_regular));
-        cf.setFN(getFalses(MessageType.SPAM,test_listing_spam));
+        cf.setFP(getFalses(Bayespam.MessageType.NORMAL,test_listing_regular));
+        cf.setFN(getFalses(Bayespam.MessageType.SPAM,test_listing_spam));
         return cf;
     }
 
-    private static int getFalses(MessageType type, File[] testMsgs){
+    private static int getFalses(Bayespam.MessageType type, File[] testMsgs){
         int falses=0;
         for(File msg : testMsgs){
 
             try{
-                if(type.value()!=bayesClass.classify(msg)) falses+=1;
+                if(type.value()!=bayesClass.classify(msg, BayesClass.FeatureMode.BIGRAM)) falses+=1;
             }catch(FileNotFoundException e){
                 System.out.println("Cannot find file");
             }catch(IOException e){
@@ -145,13 +130,13 @@ public class Bayespam
 
 
     // Read the words from messages and add them to your vocabulary. The boolean type determines whether the messages are regular or not  
-    private static void readMessages(MessageType type)
+    private static void readMessages(Bayespam.MessageType type)
     throws IOException
     {
         Reducer<String> reducer = new Reducer<>(new WordFilter(), new StopWordFilter());
         File[] messages = new File[0];
 
-        if (type == MessageType.NORMAL){
+        if (type == Bayespam.MessageType.NORMAL){
             messages = listing_regular;
         } else {
             messages = listing_spam;
@@ -170,7 +155,7 @@ public class Bayespam
                 if(line.contains("0rgasm")){
                     System.out.println("asdas");
                 }
-                Collection<String> st = Featurizer.extractFeatures(line);         // parse it into words
+                Collection<String> st = Featurizer.extractBigrams(line);         // parse it into words
                 
                 for(String token : st)                  // while there are stille words left..
                 {
@@ -205,8 +190,8 @@ public class Bayespam
         bayesClass.initializePriors(dir_location.listFiles());
 
         // Read the e-mail messages
-        readMessages(MessageType.NORMAL);
-        readMessages(MessageType.SPAM);
+        readMessages(Bayespam.MessageType.NORMAL);
+        readMessages(Bayespam.MessageType.SPAM);
 
         // Print out the hash table
         //printVocab();
