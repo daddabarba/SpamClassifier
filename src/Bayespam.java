@@ -8,7 +8,17 @@ public class Bayespam
     // This defines the two types of messages we have.
     static enum MessageType
     {
-        NORMAL, SPAM
+        NORMAL(0), SPAM(1);
+
+        private int val;
+
+        private MessageType(int val){
+            this.val = val;
+        }
+
+        public int value(){
+            return this.val;
+        }
     }
 
     // This a class with two counters (for regular and for spam)
@@ -28,6 +38,34 @@ public class Bayespam
         }
     }
 
+    // This a class with two counters (for regular and for spam)
+    public static class ConfusionMatrix{
+        int totPos;
+        int totNeg;
+        int FP;
+        int FN;
+
+        public ConfusionMatrix(int totPos, int totNeg){
+            this.totPos = totPos;
+            this.totNeg = totNeg;
+        }
+
+        public void setFP(int fp){
+            this.FP = fp;
+        };
+        public void setFN(int fn){
+            this.FN = fn;
+        };
+
+        public void printMatrix(){
+            System.out.println(" tp: "+(totPos-FN)+" fn: "+FN);
+            System.out.println(" fp: "+FP+" tn: "+(totNeg-FP));
+        }
+
+    }
+
+    //Initialize Bayes stats wrapper
+    private static BayesClass bayesClass;
     // Listings of the two subdirectories (regular/ and spam/)
     private static File[] listing_regular = new File[0];
     private static File[] listing_spam = new File[0];
@@ -67,6 +105,40 @@ public class Bayespam
 
         listing_regular = dir_listing[regular_idx].listFiles();
         listing_spam    = dir_listing[1-regular_idx].listFiles();
+    }
+
+    private static ConfusionMatrix buildConfusionMatrix(File test_location){
+        File[] test_listing = test_location.listFiles();
+        // Check that there are 2 subdirectories
+        if ( test_listing.length != 2 )
+        {
+            System.out.println( "- Error: specified TEST directory does not contain two subdirectories.\n" );
+            Runtime.getRuntime().exit(0);
+        }
+        int regular_idx = test_listing[0].getName().equals("regular") ? 0 : 1;
+
+        File[] test_listing_regular = test_listing[regular_idx].listFiles();
+        File[] test_listing_spam    = test_listing[1-regular_idx].listFiles();
+        
+        ConfusionMatrix cf = new ConfusionMatrix(test_listing_spam.length, test_listing_regular.length);
+        cf.setFP(getFalses(MessageType.NORMAL,test_listing_regular));
+        cf.setFN(getFalses(MessageType.SPAM,test_listing_spam));
+        return cf;
+    }
+
+    private static int getFalses(MessageType type, File[] testMsgs){
+        int falses=0;
+        for(File msg : testMsgs){
+
+            try{
+                if(type.value()!=bayesClass.classify(msg)) falses+=1;
+            }catch(FileNotFoundException e){
+                System.out.println("Cannot find file");
+            }catch(IOException e){
+                System.out.println("Cannot read or close file");
+            }
+        }
+        return falses;
     }
 
     
@@ -143,7 +215,7 @@ public class Bayespam
         listDirs(dir_location);
 
         //Initialize Bayes stats wrapper
-        BayesClass bayesClass = new BayesClass();
+        bayesClass = new BayesClass();
 
         //Initialize prior probabilities
         bayesClass.initializePriors(dir_location.listFiles());
@@ -155,8 +227,18 @@ public class Bayespam
         // Print out the hash table
         //printVocab();
         bayesClass.initializeLikelihoods(vocab);
-        bayesClass.printTable();
+        //bayesClass.printTable();
         
+        File test_location = new File( args[1] );
+        // Check if the cmd line arg is a directory
+        if ( !dir_location.isDirectory() )
+        {
+            System.out.println( "- Error: cmd line arg not a directory.\n" );
+            Runtime.getRuntime().exit(0);
+        }
+        ConfusionMatrix cf = buildConfusionMatrix(test_location);
+        cf.printMatrix();
+
         // Now all students must continue from here:
         //
         // 1) A priori class probabilities must be computed from the number of regular and spam messages

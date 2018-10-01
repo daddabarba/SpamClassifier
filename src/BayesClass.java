@@ -37,7 +37,6 @@ public class BayesClass{
 
     public int classify(File message) throws FileNotFoundException, IOException{
         ProbabilityPair posterior = getPosteriors(message);
-
         if(posterior.getP(0)>posterior.getP(1))
             return 0;
         
@@ -67,10 +66,9 @@ public class BayesClass{
         Collection<String> words  = Featurizer.extractFeatures(line);
 
         for(String token : words)
-            if(likelihoods.contains(token))
+            if(likelihoods.keySet().contains(token))
                 lineLikelihood.add(likelihoods.get(token));
         
-
         return lineLikelihood;
     }
 
