@@ -7,8 +7,8 @@ public class Reducer<T>{
         this.filters = Arrays.asList(f);
     }
 
-    public Collection<T> reduce( Collection<T> coll){
-        Collection<T> filtered = new ArrayList<>(coll);
+    public ArrayList<T> reduce( ArrayList<T> coll){
+        ArrayList<T> filtered = new ArrayList<>(coll);
 
         for(Filter<T> filter : filters)
             for(T o : coll)

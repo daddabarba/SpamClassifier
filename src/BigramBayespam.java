@@ -155,7 +155,7 @@ public class BigramBayespam
                 if(line.contains("0rgasm")){
                     System.out.println("asdas");
                 }
-                Collection<String> st = Featurizer.extractBigrams(line);         // parse it into words
+                ArrayList<String> st = Featurizer.extractBigrams(line);         // parse it into words
                 
                 for(String token : st)                  // while there are stille words left..
                 {

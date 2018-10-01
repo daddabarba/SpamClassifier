@@ -19,7 +19,7 @@ public class StringProcessor{
             }
                 
         }
-        
+
         return splitted;
     }
 }

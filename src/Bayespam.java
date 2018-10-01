@@ -170,7 +170,7 @@ public class Bayespam
                 if(line.contains("0rgasm")){
                     System.out.println("asdas");
                 }
-                Collection<String> st = Featurizer.extractFeatures(line);         // parse it into words
+                ArrayList<String> st = Featurizer.extractFeatures(line);         // parse it into words
                 
                 for(String token : st)                  // while there are stille words left..
                 {

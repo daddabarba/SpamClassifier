@@ -74,7 +74,7 @@ public class BayesClass{
     private ProbabilityPair getLineLikelihood(String line, FeatureMode mode){
 
         ProbabilityPair lineLikelihood = new ProbabilityPair(0.0, 0.0);
-        Collection<String> words;
+        ArrayList<String> words;
 
         if(mode==FeatureMode.UNIGRAM)
             words  = Featurizer.extractFeatures(line);
