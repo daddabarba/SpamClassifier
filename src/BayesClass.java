@@ -29,12 +29,6 @@ public class BayesClass{
             P_H0 = lH0;
             P_H1 = lH1;
             evidence = 0.0;
-
-            size_H0 = 0;
-            size_H1 = 0;
-
-            likelihoods = new HashMap<>();
-            blackList = new ArrayList<>();
         }
 
         public void setEvidence(double evidence){
@@ -68,6 +62,12 @@ public class BayesClass{
     public BayesClass(double eps, double minF){
         this.eps = eps;
         this.minF = minF;
+
+        size_H0 = 0;
+        size_H1 = 0;
+
+        likelihoods = new HashMap<>();
+        blackList = new ArrayList<>();
     }
 
     public BayesClass(double eps){
