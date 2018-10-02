@@ -30,7 +30,7 @@ public class Featurizer{
         
         for(int i = 0; i < tokens.size()-1; i++){
             if(!isTag(tokens.get(i)) && !isTag(tokens.get(i+1))){
-                bigrams.add(tokens.get(i)+" "+tokens.get(i));
+                bigrams.add(tokens.get(i)+" "+tokens.get(i+1));
             }
         }
 

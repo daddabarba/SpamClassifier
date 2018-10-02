@@ -196,6 +196,7 @@ public class BigramBayespam
                 if(args.length>3){
                     try{
                         double minF = Double.parseDouble(args[3]);
+                        
                         bayesClass = new BayesClass(eps,minF);
                     }catch(NullPointerException e){
                         System.out.println("Fourth argument must be double (minF)");
@@ -232,7 +233,7 @@ public class BigramBayespam
         }
         ConfusionMatrix cf = buildConfusionMatrix(test_location);
         cf.printJSONMatrix();
-
+        cf.printMatrix();
         // Now all students must continue from here:
         //
         // 1) A priori class probabilities must be computed from the number of regular and spam messages

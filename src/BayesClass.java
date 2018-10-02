@@ -171,9 +171,12 @@ public class BayesClass{
             }
         });
 
-
-        for(int i=0; i<(int)(minF*listDict.size()); i++)
+        //System.out.println("round="+(int)(minF*listDict.size()));
+        for(int i=0; i<(int)(minF*listDict.size()); i++){
             blackList.add(listDict.get(i).getKey());
+            //System.out.println(listDict.get(i).getKey());
+        }
+         
 
     }
 
