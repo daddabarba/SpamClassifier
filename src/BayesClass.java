@@ -51,6 +51,11 @@ public class BayesClass{
         }
     }
 
+    public BayesClass(double eps, double minT){
+        this.eps = eps;
+        this.minT = minT;
+    }
+
     public BayesClass(double eps){
         this.eps = eps;
     }

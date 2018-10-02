@@ -184,7 +184,28 @@ public class BigramBayespam
         listDirs(dir_location);
 
         //Initialize Bayes stats wrapper
-        bayesClass = new BayesClass();
+        if(args.length>2){
+
+            try {
+                double eps = Double.parseDouble(args[2]);
+
+                if(args.length>3){
+                    try{
+                        double minF = Double.parseDouble(args[3]);
+                        bayesClass = new BayesClass(eps,minF);
+                    }catch(NullPointerException e){
+                        System.out.println("Fourth argument must be double (minF)");
+                        System.exit(1);
+                    }
+                }else
+                    bayesClass = new BayesClass(eps);
+
+            } catch (NullPointerException e) {
+                System.out.println("Third argument must be double (epsilon)");
+                System.exit(1);
+            }
+        }else
+            bayesClass = new BayesClass();
 
         //Initialize prior probabilities
         bayesClass.initializePriors(dir_location.listFiles());

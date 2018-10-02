@@ -204,7 +204,6 @@ public class Bayespam
 
 
         //Initialize Bayes stats wrapper
-        
         if(args.length>2){
 
             try{
