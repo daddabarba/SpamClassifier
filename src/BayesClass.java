@@ -11,7 +11,7 @@ public class BayesClass{
 
     private double eps;
     public static final double alpha = 1.0;
-    private double minF = 0.0;
+    private double minF;
 
     private double prior_H0, prior_H1;
     private double log_prior_H0, log_prior_H1;
@@ -51,17 +51,17 @@ public class BayesClass{
         }
     }
 
-    public BayesClass(double eps, double minT){
+    public BayesClass(double eps, double minF){
         this.eps = eps;
-        this.minT = minT;
+        this.minF = minF;
     }
 
     public BayesClass(double eps){
-        this.eps = eps;
+        this(eps, 0.0);
     }
 
     public BayesClass(){
-        this(1.0);
+        this(1.0, 0.0);
     }
 
     public int classify(File message) throws FileNotFoundException, IOException {
