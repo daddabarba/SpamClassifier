@@ -26,6 +26,10 @@ public class BigramBayespam
             this.FN = fn;
         };
 
+        public void printJSONMatrix(){
+            System.out.println("{ \"tp\":"+(totPos-FN)+", \"fn\": "+FN+","+
+                    "\"fp\":"+FP+", \"tn\": "+(totNeg-FP)+"}");
+        }
         public void printMatrix(){
             System.out.println(" tp: "+(totPos-FN)+" fn: "+FN);
             System.out.println(" fp: "+FP+" tn: "+(totNeg-FP));
@@ -227,7 +231,7 @@ public class BigramBayespam
             Runtime.getRuntime().exit(0);
         }
         ConfusionMatrix cf = buildConfusionMatrix(test_location);
-        cf.printMatrix();
+        cf.printJSONMatrix();
 
         // Now all students must continue from here:
         //
