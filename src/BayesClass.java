@@ -9,9 +9,9 @@ public class BayesClass{
         UNIGRAM, BIGRAM
     }
 
-    public static final double eps = 1.0;
+    private double eps;
     public static final double alpha = 1.0;
-    public static final double minF = 0.0;
+    private double minF = 0.0;
 
     private double prior_H0, prior_H1;
     private double log_prior_H0, log_prior_H1;
@@ -49,6 +49,14 @@ public class BayesClass{
             P_H0 += p.getP(0);
             P_H1 += p.getP(1);
         }
+    }
+
+    public BayesClass(double eps){
+        this.eps = eps;
+    }
+
+    public BayesClass(){
+        this(1.0);
     }
 
     public int classify(File message) throws FileNotFoundException, IOException {
@@ -127,10 +135,10 @@ public class BayesClass{
             double likelihood_H0 = (double)absFrequencies.get(word).counter_regular/size_H0;
             double likelihood_H1 = (double)absFrequencies.get(word).counter_spam/size_H1;
 
-            if(!(likelihood_H0>0.0))
+            if(absFrequencies.get(word).counter_regular==0)
                 likelihood_H0 = eps/(size_H0+size_H1);
 
-            if(!(likelihood_H1>0.0))
+            if(absFrequencies.get(word).counter_spam==0)
                 likelihood_H1 = eps/(size_H0+size_H1);
 
             likelihoods.put(word,computeEvidence(likelihood_H0, likelihood_H1));

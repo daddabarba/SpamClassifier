@@ -41,6 +41,10 @@ public class Bayespam
             this.FN = fn;
         };
 
+        public void printJSONMatrix(){
+            System.out.println("{ \"tp\":"+(totPos-FN)+", \"fn\": "+FN+","+
+                                "\"fp\":"+FP+", \"tn\": "+(totNeg-FP)+"}");
+        }
         public void printMatrix(){
             System.out.println(" tp: "+(totPos-FN)+" fn: "+FN);
             System.out.println(" fp: "+FP+" tn: "+(totNeg-FP));
@@ -198,8 +202,20 @@ public class Bayespam
         // Initialize the regular and spam lists
         listDirs(dir_location);
 
+
         //Initialize Bayes stats wrapper
-        bayesClass = new BayesClass();
+        
+        if(args.length>2){
+
+            try{
+                double eps = Double.parseDouble(args[2]);
+                bayesClass = new BayesClass(eps);
+            }catch(NullPointerException e){
+                System.out.println("Third argument must be double (epsilon)");
+                System.exit(1);
+            }
+        }else
+            bayesClass = new BayesClass();
 
         //Initialize prior probabilities
         bayesClass.initializePriors(dir_location.listFiles());
@@ -221,7 +237,7 @@ public class Bayespam
             Runtime.getRuntime().exit(0);
         }
         ConfusionMatrix cf = buildConfusionMatrix(test_location);
-        cf.printMatrix();
+        cf.printJSONMatrix();
 
         // Now all students must continue from here:
         //
