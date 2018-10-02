@@ -15,11 +15,12 @@ public class BayesClass{
 
     private double prior_H0, prior_H1;
     private double log_prior_H0, log_prior_H1;
-    private int size_H0=0, size_H1=0;
+    private int size_H0, size_H1;
 
-    private Hashtable<String, ProbabilityPair> likelihoods = new Hashtable<>();
+    private HashMap<String, ProbabilityPair> likelihoods;
+    private ArrayList<String> blackList;
 
-    private class ProbabilityPair{
+    private class ProbabilityPair implements  Comparable<ProbabilityPair>{
 
         private double P_H0, P_H1;
         private double evidence;
@@ -28,6 +29,12 @@ public class BayesClass{
             P_H0 = lH0;
             P_H1 = lH1;
             evidence = 0.0;
+
+            size_H0 = 0;
+            size_H1 = 0;
+
+            likelihoods = new HashMap<>();
+            blackList = new ArrayList<>();
         }
 
         public void setEvidence(double evidence){
@@ -48,6 +55,13 @@ public class BayesClass{
         public void add(ProbabilityPair p){
             P_H0 += p.getP(0);
             P_H1 += p.getP(1);
+        }
+
+        public int compareTo(ProbabilityPair o){
+            if(evidence==o.getEvidence())
+                return 0;
+
+            return evidence<o.getEvidence() ? -1 : 1;
         }
     }
 
@@ -108,7 +122,7 @@ public class BayesClass{
 
         for(String token : words)
             if(likelihoods.keySet().contains(token))
-                if(mode!=FeatureMode.BIGRAM || likelihoods.get(token).getEvidence()>minF)    
+                if(mode!=FeatureMode.BIGRAM || !blackList.contains(token))
                     lineLikelihood.add(likelihoods.get(token));
         
         return lineLikelihood;
@@ -148,6 +162,18 @@ public class BayesClass{
 
             likelihoods.put(word,computeEvidence(likelihood_H0, likelihood_H1));
         }
+
+        List<Map.Entry<String, ProbabilityPair>> listDict = new LinkedList<Map.Entry<String, ProbabilityPair>>(likelihoods.entrySet());
+
+        Collections.sort(listDict, new Comparator<Map.Entry<String, ProbabilityPair>>() {
+            public int compare(Map.Entry<String, ProbabilityPair> o1, Map.Entry<String, ProbabilityPair> o2) {
+                return (o1.getValue()).compareTo(o2.getValue());
+            }
+        });
+
+
+        for(int i=0; i<(int)(minF*listDict.size()); i++)
+            blackList.add(listDict.get(i).getKey());
 
     }
 
