@@ -5,6 +5,8 @@ import java.util.*;
 
 public class BayesClass{
     //Wrapper for Bayes formulas and data (posterior, likelihood, and evidence computation)
+    //In this class the null hypothesis class (H0, or class 0) is the regular class,
+    //while the alternative hypothesis class (H1, or class 1) is the spam class.
 
     //Defines the used feature space
     public enum FeatureMode{
