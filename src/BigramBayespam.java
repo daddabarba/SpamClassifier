@@ -7,18 +7,20 @@ public class BigramBayespam
 {
 
 
-    // This a class with two counters (for regular and for spam)
+    // Confusiton matrix, keeps track of error rate (w.r.t. each class)
     public static class ConfusionMatrix{
-        int totPos;
-        int totNeg;
-        int FP;
-        int FN;
+        int totPos; //Number of positive (spam) examples
+        int totNeg; //Number of negative (regular) examples
+        int FP; //Number of False Positive errors
+        int FN; //Number of False Negative errors
 
+        //Constructor, initialize number of positive (spam) and negative (non spam) examples
         public ConfusionMatrix(int totPos, int totNeg){
             this.totPos = totPos;
             this.totNeg = totNeg;
         }
 
+        //Setters for false positive and false negative rate errors
         public void setFP(int fp){
             this.FP = fp;
         };
@@ -26,12 +28,17 @@ public class BigramBayespam
             this.FN = fn;
         };
 
+        //Print full confusion matrix as a Json
         public void printJSONMatrix(){
             System.out.println("{ \"tp\":"+(totPos-FN)+", \"fn\": "+FN+","+
                     "\"fp\":"+FP+", \"tn\": "+(totNeg-FP)+"}");
         }
+
+        //Print full confusion matrix
         public void printMatrix(){
+            //True positives vs False Negatives
             System.out.println(" tp: "+(totPos-FN)+" fn: "+FN);
+            //False positives vs True negatives
             System.out.println(" fp: "+FP+" tn: "+(totNeg-FP));
         }
 
@@ -39,6 +46,7 @@ public class BigramBayespam
 
     //Initialize Bayes stats wrapper
     private static BayesClass bayesClass;
+
     // Listings of the two subdirectories (regular/ and spam/)
     private static File[] listing_regular = new File[0];
     private static File[] listing_spam = new File[0];
@@ -46,20 +54,22 @@ public class BigramBayespam
     // A hash table for the vocabulary (word searching is very fast in a hash table)
     private static Hashtable <String, Multiple_Counter> vocab = new Hashtable <String, Multiple_Counter> ();
 
-    
     // Add a word to the vocabulary
     private static void addWord(String word, Bayespam.MessageType type)
     {
         Multiple_Counter counter = new Multiple_Counter();
 
-        if ( vocab.containsKey(word) ){                  // if word exists already in the vocabulary..
-            counter = vocab.get(word);                  // get the counter from the hashtable
-        }
-        counter.incrementCounter(type);                 // increase the counter appropriately
+        // if word exists already in the vocabulary..
+        if ( vocab.containsKey(word) )
+            // get the counter from the hashtable
+            counter = vocab.get(word);
 
-        vocab.put(word, counter);                       // put the word with its counter into the hashtable
+        // increase the counter appropriately
+        counter.incrementCounter(type);
+
+        // put the word with its counter into the hashtable
+        vocab.put(word, counter);
     }
-
 
     // List the regular and spam messages
     private static void listDirs(File dir_location)
@@ -74,43 +84,70 @@ public class BigramBayespam
             Runtime.getRuntime().exit(0);
         }
 
+        //Check which folder contains regular messages, and which contains spam messages
         int regular_idx = dir_listing[0].getName().equals("regular") ? 0 : 1;
 
+        //Get paths to regular and spam folder
         listing_regular = dir_listing[regular_idx].listFiles();
         listing_spam    = dir_listing[1-regular_idx].listFiles();
     }
 
+    //Test the classifier and buil resulting confusion matrix (given test location)
     private static ConfusionMatrix buildConfusionMatrix(File test_location){
+
+        // List all files in the directory passed
         File[] test_listing = test_location.listFiles();
+
         // Check that there are 2 subdirectories
         if ( test_listing.length != 2 )
         {
             System.out.println( "- Error: specified TEST directory does not contain two subdirectories.\n" );
             Runtime.getRuntime().exit(0);
         }
+
+        //Check which folder contains regular messages, and which contains spam messages
         int regular_idx = test_listing[0].getName().equals("regular") ? 0 : 1;
 
+        //Get paths to regular and spam folder
         File[] test_listing_regular = test_listing[regular_idx].listFiles();
         File[] test_listing_spam    = test_listing[1-regular_idx].listFiles();
-        
+
+        //Initialize confusion matrix with number of Positives(spam) and Negative(regular) examples in the testing data-set
         ConfusionMatrix cf = new ConfusionMatrix(test_listing_spam.length, test_listing_regular.length);
+
+        //Compute number of false positives (Number of regular classified as spam)
         cf.setFP(getFalses(Bayespam.MessageType.NORMAL,test_listing_regular));
+        //Compute number of false negatives (Number of spam classified as regular)
         cf.setFN(getFalses(Bayespam.MessageType.SPAM,test_listing_spam));
+
+        //Return confusion matrix
         return cf;
     }
 
+    //Returns number of errors in classifying messages testMsgs of known class type
     private static int getFalses(Bayespam.MessageType type, File[] testMsgs){
+
+        //Initialize number of misclassifications to 0
         int falses=0;
+
+        //For each message
         for(File msg : testMsgs){
 
             try{
-                if(type.value()!=bayesClass.classify(msg, BayesClass.FeatureMode.BIGRAM)) falses+=1;
+
+                //Classify message (with BIGRAMS). If classified class different from type
+                if(type.value()!=bayesClass.classify(msg, BayesClass.FeatureMode.BIGRAM))
+                    //Add one error to the count
+                    falses+=1;
+
             }catch(FileNotFoundException e){
                 System.out.println("Cannot find file");
             }catch(IOException e){
                 System.out.println("Cannot read or close file");
             }
         }
+
+        //Return number of errors
         return falses;
     }
 
@@ -118,15 +155,20 @@ public class BigramBayespam
     // Print the current content of the vocabulary
     private static void printVocab()
     {
+        //Empty counter variable
         Multiple_Counter counter = new Multiple_Counter();
 
+        //For each token in vocabulaty
         for (Enumeration<String> e = vocab.keys() ; e.hasMoreElements() ;)
         {   
             String word;
-            
+
+            //Get word
             word = e.nextElement();
+            //Get word's counter
             counter  = vocab.get(word);
-            
+
+            //Print absolute frequencies
             System.out.println( word + " | in regular: " + counter.counter_regular + 
                                 " in spam: "    + counter.counter_spam);
         }
@@ -137,34 +179,34 @@ public class BigramBayespam
     private static void readMessages(Bayespam.MessageType type)
     throws IOException
     {
-        Reducer<String> reducer = new Reducer<>(new WordFilter(), new StopWordFilter());
+        //Empty list of messages
         File[] messages = new File[0];
 
-        if (type == Bayespam.MessageType.NORMAL){
+        //Depending on the class counted, select folder
+        if (type == Bayespam.MessageType.NORMAL)
             messages = listing_regular;
-        } else {
+        else
             messages = listing_spam;
-        }
-        
-        for (int i = 0; i < messages.length; ++i) // for each file
+
+        //For each message
+        for (int i = 0; i < messages.length; ++i)
         {
             // create read stream
             FileInputStream i_s = new FileInputStream( messages[i] );
             BufferedReader in = new BufferedReader(new InputStreamReader(i_s));
             String line;
             String word;
-            
-            while ((line = in.readLine()) != null)                      // read a line
+
+            //For each line
+            while ((line = in.readLine()) != null)
             {
-                if(line.contains("0rgasm")){
-                    System.out.println("asdas");
-                }
-                ArrayList<String> st = Featurizer.extractBigrams(line);         // parse it into words
-                
-                for(String token : st)                  // while there are stille words left..
-                {
-                    addWord(token, type);                  // add them to the vocabulary
-                }
+                //Parse line into words
+                ArrayList<String> st = Featurizer.extractBigrams(line);
+
+                //For every word
+                for(String token : st)
+                    //Add to vocabulary
+                    addWord(token, type);
             }
 
             in.close();
@@ -188,21 +230,31 @@ public class BigramBayespam
         listDirs(dir_location);
 
         //Initialize Bayes stats wrapper
+
+        //If third argument is given
         if(args.length>2){
 
+            //Parse it as the used epsilon
             try {
+
+                //Get epsilon
                 double eps = Double.parseDouble(args[2]);
 
+                //If fourth argument is given
                 if(args.length>3){
+
+                    //Parse it as the used minF
                     try{
+                        //Get minF
                         double minF = Double.parseDouble(args[3]);
-                        
+                        //Initialize wrapper with given epsilon and minF
                         bayesClass = new BayesClass(eps,minF);
                     }catch(NullPointerException e){
                         System.out.println("Fourth argument must be double (minF)");
                         System.exit(1);
                     }
                 }else
+                    //Initialize wrapper with given epsilon
                     bayesClass = new BayesClass(eps);
 
             } catch (NullPointerException e) {
@@ -210,6 +262,7 @@ public class BigramBayespam
                 System.exit(1);
             }
         }else
+            //Initialize wrapper with given parameters (epsilon and minF)
             bayesClass = new BayesClass();
 
         //Initialize prior probabilities
@@ -219,32 +272,23 @@ public class BigramBayespam
         readMessages(Bayespam.MessageType.NORMAL);
         readMessages(Bayespam.MessageType.SPAM);
 
-        // Print out the hash table
-        //printVocab();
+        //Convert absolute frequencies to log likelihoods
         bayesClass.initializeLikelihoods(vocab);
-        //bayesClass.printTable();
-        
+
+        //Get testing folder
         File test_location = new File( args[1] );
+
         // Check if the cmd line arg is a directory
         if ( !dir_location.isDirectory() )
         {
             System.out.println( "- Error: cmd line arg not a directory.\n" );
             Runtime.getRuntime().exit(0);
         }
+
+        //Test Classigier on data-set in testing folder (build confusion matrix)
         ConfusionMatrix cf = buildConfusionMatrix(test_location);
-        cf.printJSONMatrix();
+
+        //Print confusion matrix
         cf.printMatrix();
-        // Now all students must continue from here:
-        //
-        // 1) A priori class probabilities must be computed from the number of regular and spam messages
-        // 2) The vocabulary must be clean: punctuation and digits must be removed, case insensitive
-        // 3) Conditional probabilities must be computed for every word
-        // 4) A priori probabilities must be computed for every word
-        // 5) Zero probabilities must be replaced by a small estimated value
-        // 6) Bayes rule must be applied on new messages, followed by argmax classification
-        // 7) Errors must be computed on the test set (FAR = false accept rate (misses), FRR = false reject rate (false alarms))
-        // 8) Improve the code and the performance (speed, accuracy)
-        //
-        // Use the same steps to create a class BigramBayespam which implements a classifier using a vocabulary consisting of bigrams
     }
 }
