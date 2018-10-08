@@ -131,7 +131,7 @@ public class Bayespam {
         File[] test_listing_regular = test_listing[regular_idx].listFiles();
         File[] test_listing_spam    = test_listing[1-regular_idx].listFiles();
 
-        //Initialize confusion matrix with number of Positives and Negative examples in the testing data-set
+        //Initialize confusion matrix with number of Positives(spam) and Negative(regular) examples in the testing data-set
         ConfusionMatrix cf = new ConfusionMatrix(test_listing_spam.length, test_listing_regular.length);
 
         //Compute number of false positives (Number of regular classified as spam)
@@ -197,9 +197,6 @@ public class Bayespam {
     private static void readMessages(MessageType type)
     throws IOException
     {
-        //Initialize filters used on the tokens (Filter numbers and small words)
-        Reducer<String> reducer = new Reducer<>(new WordFilter(), new StopWordFilter());
-
         //Empty list of messages
         File[] messages = new File[0];
 
@@ -224,9 +221,6 @@ public class Bayespam {
 
                 //Parse line into words
                 ArrayList<String> st = Featurizer.extractFeatures(line);
-
-                //Filter words
-                st = reducer.reduce(st);
 
                 //For every word
                 for(String token : st)
@@ -272,17 +266,17 @@ public class Bayespam {
                 System.exit(1);
             }
         }else
-            //Initialize wrapper with default parameters (epsilon and minF)
+            //Initialize wrapper with default parameters (epsilon)
             bayesClass = new BayesClass();
 
         //Initialize prior probabilities
         bayesClass.initializePriors(dir_location.listFiles());
 
-        // Read the e-mail messages
+        //Read the e-mail messages
         readMessages(MessageType.NORMAL);
         readMessages(MessageType.SPAM);
 
-        // Conver absolute frequencies to log likelihoods
+        //Convert absolute frequencies to log likelihoods
         bayesClass.initializeLikelihoods(vocab);
 
         //Get testing folder
@@ -299,6 +293,6 @@ public class Bayespam {
         ConfusionMatrix cf = buildConfusionMatrix(test_location);
 
         //Print confusion matrix
-        cf.printJSONMatrix();
+        cf.printMatrix();
     }
 }
