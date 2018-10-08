@@ -269,6 +269,27 @@ public class Bayespam {
             ///Initialize wrapper with default parameters (epsilon)
             bayesClass = new BayesClass();
 
+
+        ///If there is a fourth argument
+        if(args.length>3){
+
+            ///Parse it as the used minimum word size
+            try{
+
+                ///Get minSize
+                int minSize = Integer.parseInt(args[3]);
+                ///Initialize wrapper with given epsilon
+                Featurizer.changeMinSize(minSize);
+
+            }catch(NullPointerException e){
+                System.out.println("Fourth argument must be int (minSize)");
+                System.exit(1);
+            }catch(NumberFormatException e){
+                System.out.println("Fourth argument must be int (minSize)");
+                System.exit(1);
+            }
+        }
+
         ///Initialize prior probabilities
         bayesClass.initializePriors(dir_location.listFiles());
 

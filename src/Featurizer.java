@@ -44,6 +44,11 @@ public class Featurizer{
         return bigrams;
     }
 
+    public static void changeMinSize(int minSize){
+        ///Edit the minimum word size (for the stop word filter)
+        reducer =new Reducer<>(new WordFilter(), new StopWordFilter(minSize));
+    }
+
     private static boolean isTag(String token){
         ///Checks if a given string is an HTML tag
         return token.charAt(0) == '<' && token.charAt(token.length()-1) == '>';
