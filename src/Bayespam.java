@@ -169,7 +169,6 @@ public class Bayespam {
         //Return number of errors
         return falses;
     }
-
     
     // Print the current content of the vocabulary
     private static void printVocab()
@@ -211,7 +210,7 @@ public class Bayespam {
             messages = listing_spam;
 
         //For each message
-        for (int i = 0; i < messages.length; ++i) // for each file
+        for (int i = 0; i < messages.length; ++i)
         {
             // create read stream
             FileInputStream i_s = new FileInputStream( messages[i] );
@@ -273,7 +272,7 @@ public class Bayespam {
                 System.exit(1);
             }
         }else
-            //Initialize wrapper with default values
+            //Initialize wrapper with default parameters (epsilon and minF)
             bayesClass = new BayesClass();
 
         //Initialize prior probabilities
