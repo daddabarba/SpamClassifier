@@ -265,6 +265,26 @@ public class BigramBayespam
             ///Initialize wrapper with given parameters (epsilon and minF)
             bayesClass = new BayesClass();
 
+        ///If there is a fifth argument
+        if(args.length>4){
+
+            ///Parse it as the used minimum word size
+            try{
+
+                ///Get minSize
+                int minSize = Integer.parseInt(args[4]);
+                ///Initialize wrapper with given epsilon
+                Featurizer.changeMinSize(minSize);
+
+            }catch(NullPointerException e){
+                System.out.println("Fifth argument must be int (minSize)");
+                System.exit(1);
+            }catch(NumberFormatException e){
+                System.out.println("Fifth argument must be int (minSize)");
+                System.exit(1);
+            }
+        }
+
         ///Initialize prior probabilities
         bayesClass.initializePriors(dir_location.listFiles());
 

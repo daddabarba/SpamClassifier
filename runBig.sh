@@ -1,2 +1,2 @@
 #!/bin/bash
-java -cp target/ src.BigramBayespam $1 $2 $3 $4
+java -cp target/ src.BigramBayespam $1 $2 $3 $4 $5
