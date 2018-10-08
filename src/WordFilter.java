@@ -1,25 +1,25 @@
 package src;
 
 public class WordFilter implements Filter<String>{
-    //Filters out numerals
+    ///Filters out numerals
 
     @Override
     public boolean accept(String word){
         return !isNumeric(word);
     }    
 
-    //returns true if a string is a numeral
+    ///returns true if a string is a numeral
     private static boolean isNumeric(String str)  
     {  
         try {
-            //Parse a double
+            ///Parse a double
             double d = Double.parseDouble(str);  
         } catch(NumberFormatException nfe){
-            //If fails to do so, the string is not a double
+            ///If fails to do so, the string is not a double
             return false;  
         }
 
-        //If it doesn't fail the string is a doble
+        ///If it doesn't fail the string is a doble
         return true;  
     }
 }
